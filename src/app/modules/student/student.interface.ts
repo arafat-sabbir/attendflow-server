@@ -108,6 +108,7 @@ export interface IStudentFilters {
     departmentId?: string;
     semester?: number;
     isActive?: boolean;
+    status?: 'all' | 'active' | 'inactive';
     search?: string;
     dateRange?: {
         start: Date;

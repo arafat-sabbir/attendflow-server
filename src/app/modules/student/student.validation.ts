@@ -40,6 +40,7 @@ const studentFiltersSchema = z.object({
         departmentId: z.string().optional(),
         semester: z.string().regex(/^\d+$/, 'Semester must be a number').optional(),
         isActive: z.string().regex(/^(true|false)$/, 'isActive must be true or false').optional(),
+        status: z.enum(['all', 'active', 'inactive']).optional(),
         search: z.string().optional(),
         page: z.string().regex(/^\d+$/, 'Page must be a number').optional(),
         limit: z.string().regex(/^\d+$/, 'Limit must be a number').optional(),

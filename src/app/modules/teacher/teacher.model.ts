@@ -57,14 +57,20 @@ export const TeacherModel = {
 
     // Get all teachers with optional filters
     findMany: async (filters: any = {}) => {
-        const { departmentId, designation, specialization, isActive, search } = filters;
+        const { departmentId, designation, specialization, isActive, status, search } = filters;
 
         const where: any = {};
 
         if (departmentId) where.departmentId = departmentId;
         if (designation) where.designation = { contains: designation, mode: 'insensitive' };
         if (specialization) where.specialization = { contains: specialization, mode: 'insensitive' };
-        if (isActive !== undefined) where.isActive = isActive;
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        } else if (isActive !== undefined) {
+            where.isActive = isActive;
+        }
         if (search) {
             where.OR = [
                 { user: { name: { contains: search, mode: 'insensitive' } } },

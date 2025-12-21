@@ -7,7 +7,7 @@ const prismaClientSingleton = () => {
         host: 'localhost',
         port: 5432,
         user: 'postgres',
-        password: 'fatiha',
+        password: '01632029032',
         database: 'attendflow',
     });
 

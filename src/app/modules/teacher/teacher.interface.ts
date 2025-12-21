@@ -228,6 +228,7 @@ export interface ITeacherFilters {
     designation?: string;
     specialization?: string;
     isActive?: boolean;
+    status?: 'all' | 'active' | 'inactive';
     search?: string;
     dateRange?: {
         start: Date;

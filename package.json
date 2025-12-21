@@ -27,7 +27,7 @@
   "description": "",
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^7.2.0",
     "@types/cors": "^2.8.19",
     "@types/multer": "^2.0.0",
     "bcrypt": "^6.0.0",
@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
+    "@prisma/config": "^7.2.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
@@ -54,7 +55,7 @@
     "commander": "^14.0.1",
     "eslint": "^9.35.0",
     "globals": "^16.4.0",
-    "prisma": "^7.1.0",
+    "prisma": "^7.2.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2",

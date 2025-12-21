@@ -43,7 +43,7 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
     }
 
     console.log(
-      `Api :- \x1b[1m\x1b[34m${method}\x1b[0m \x1b[32m${originalUrl}\x1b[0m ${statusColor}${statusCode}\x1b[0m \x1b[90m(${duration}ms)\x1b[0m \x1b[36m[${formattedDate}]\x1b[0m`
+      `Api :- \x1b[1m\x1b[34m${method}\x1b[0m \x1b[32m${originalUrl}\x1b[0m \x1b[35mQuery: ${JSON.stringify(req.query)} Body: ${JSON.stringify(req.body)}\x1b[0m ${statusColor}${statusCode}\x1b[0m \x1b[90m(${duration}ms)\x1b[0m \x1b[36m[${formattedDate}]\x1b[0m`
     );
   });
 
@@ -51,6 +51,7 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Middleware setup
+app.use(express.json());
 app.use(requestLogger);
 app.use(
   cors({
@@ -58,7 +59,6 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
 
 // Serve static files from the public directory
 const publicDirPath = path.join(__dirname, '..', 'public');

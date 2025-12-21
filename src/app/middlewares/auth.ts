@@ -39,6 +39,7 @@ const AuthorizeRequest = (...roles: string[]) => {
         throw new AppError(StatusCodes.UNAUTHORIZED, 'User not found');
       }
     } catch (error: any) {
+      console.error('Authorization Error:', error);
       throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized Access');
     }
     next();

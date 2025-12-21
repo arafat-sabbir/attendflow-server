@@ -121,10 +121,20 @@ const getAllStudents = async (query: any): Promise<{ data: IStudentWithUser[]; m
         StudentModel.findMany({
             where: {
                 ...queryOptions.where,
-                ...(query.batchId && { batchId: query.batchId }),
-                ...(query.departmentId && { departmentId: query.departmentId }),
+                ...(query.batchId && query.batchId !== 'all' && { batchId: query.batchId }),
+                ...(query.departmentId && query.departmentId !== 'all' && { departmentId: query.departmentId }),
                 ...(query.semester && { semester: parseInt(query.semester) }),
-                ...(query.isActive !== undefined && { isActive: query.isActive === 'true' }),
+                ...(() => {
+                    let isActiveFilter;
+                    if (query.status === 'active') {
+                        isActiveFilter = true;
+                    } else if (query.status === 'inactive') {
+                        isActiveFilter = false;
+                    } else if (query.isActive !== undefined) {
+                        isActiveFilter = query.isActive === 'true';
+                    }
+                    return isActiveFilter !== undefined ? { isActive: isActiveFilter } : {};
+                })(),
             },
             include: {
                 user: {
@@ -155,10 +165,20 @@ const getAllStudents = async (query: any): Promise<{ data: IStudentWithUser[]; m
         StudentModel.count({
             where: {
                 ...queryOptions.where,
-                ...(query.batchId && { batchId: query.batchId }),
-                ...(query.departmentId && { departmentId: query.departmentId }),
+                ...(query.batchId && query.batchId !== 'all' && { batchId: query.batchId }),
+                ...(query.departmentId && query.departmentId !== 'all' && { departmentId: query.departmentId }),
                 ...(query.semester && { semester: parseInt(query.semester) }),
-                ...(query.isActive !== undefined && { isActive: query.isActive === 'true' }),
+                ...(() => {
+                    let isActiveFilter;
+                    if (query.status === 'active') {
+                        isActiveFilter = true;
+                    } else if (query.status === 'inactive') {
+                        isActiveFilter = false;
+                    } else if (query.isActive !== undefined) {
+                        isActiveFilter = query.isActive === 'true';
+                    }
+                    return isActiveFilter !== undefined ? { isActive: isActiveFilter } : {};
+                })(),
             },
         }),
     ]);

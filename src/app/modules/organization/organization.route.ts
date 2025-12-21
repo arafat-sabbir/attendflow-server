@@ -25,7 +25,7 @@ router.post(
 /**
  * @description get all departments with filtering
  * @param {string} path - /api/organization/departments
- * @param {function} middleware - ['validateRequest(OrganizationValidation.paginationQuery)']
+ * @param {function} middleware - ['validateRequest(OrganizationValidation.departmentFilters)']
  * @param {function} controller - ['getAllDepartments']
  * @returns {object} - router
  * @access private
@@ -33,7 +33,7 @@ router.post(
  */
 router.get(
     "/departments",
-    validateRequest(OrganizationValidation.paginationQuery),
+    validateRequest(OrganizationValidation.departmentFilters),
     OrganizationController.getAllDepartments
 );
 
@@ -183,7 +183,7 @@ router.post(
 /**
  * @description get all batches with filtering
  * @param {string} path - /api/organization/batches
- * @param {function} middleware - ['validateRequest(OrganizationValidation.paginationQuery)']
+ * @param {function} middleware - ['validateRequest(OrganizationValidation.batchFilters)']
  * @param {function} controller - ['getAllBatches']
  * @returns {object} - router
  * @access private
@@ -191,7 +191,7 @@ router.post(
  */
 router.get(
     "/batches",
-    validateRequest(OrganizationValidation.paginationQuery),
+    validateRequest(OrganizationValidation.batchFilters),
     OrganizationController.getAllBatches
 );
 

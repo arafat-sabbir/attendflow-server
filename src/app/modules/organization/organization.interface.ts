@@ -217,6 +217,7 @@ export interface ISubjectUpdate extends Partial<ISubjectCreate> {
 // Filters for queries
 export interface IDepartmentFilters {
     isActive?: boolean;
+    status?: 'all' | 'active' | 'inactive';
     search?: string;
     headId?: string;
 }
@@ -231,6 +232,7 @@ export interface ISemesterFilters {
 export interface IBatchFilters {
     year?: number;
     isActive?: boolean;
+    status?: 'all' | 'active' | 'inactive';
     search?: string;
 }
 

@@ -193,11 +193,17 @@ export const deleteDepartment = async (id: string): Promise<void> => {
 
 export const getAllDepartments = async (filters: IDepartmentFilters = {}): Promise<Department[]> => {
     try {
-        const { isActive, search, headId } = filters;
+        const { isActive, status, search, headId } = filters;
 
         const where: any = {};
 
-        if (isActive !== undefined) where.isActive = isActive;
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        } else if (isActive !== undefined) {
+            where.isActive = isActive;
+        }
         if (headId) where.headId = headId;
         if (search) {
             where.OR = [
@@ -578,12 +584,18 @@ export const deleteBatch = async (id: string): Promise<void> => {
 
 export const getAllBatches = async (filters: IBatchFilters = {}): Promise<Batch[]> => {
     try {
-        const { year, isActive, search } = filters;
+        const { year, isActive, status, search } = filters;
 
         const where: any = {};
 
         if (year) where.year = year;
-        if (isActive !== undefined) where.isActive = isActive;
+        if (status === 'active') {
+            where.isActive = true;
+        } else if (status === 'inactive') {
+            where.isActive = false;
+        } else if (isActive !== undefined) {
+            where.isActive = isActive;
+        }
         if (search) {
             where.OR = [
                 { name: { contains: search, mode: 'insensitive' } },

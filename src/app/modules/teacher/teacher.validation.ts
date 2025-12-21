@@ -23,6 +23,7 @@ export const teacherFiltersValidationSchema = z.object({
     designation: z.string().optional(),
     specialization: z.string().optional(),
     isActive: z.boolean().optional(),
+    status: z.enum(['all', 'active', 'inactive']).optional(),
     search: z.string().optional(),
     dateRange: z.object({
         start: z.string().datetime('Invalid start date'),

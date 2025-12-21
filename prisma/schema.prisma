@@ -73,7 +73,6 @@ enum LeaveType {
     EMERGENCY
 }
 
-
 // ==================== USER MODULE ====================
 // Contains user-related models
 
@@ -174,7 +173,6 @@ model Teacher {
 
     @@map("teachers")
 }
-
 
 // ==================== ORGANIZATION MODULE ====================
 // Contains models for organizational structure
@@ -331,7 +329,6 @@ model ClassSchedule {
     @@map("class_schedules")
 }
 
-
 // ==================== ATTENDANCE MODULE ====================
 // Contains attendance-related models
 
@@ -430,7 +427,6 @@ model QRCheckIn {
     @@map("qr_check_ins")
 }
 
-
 // ==================== LEAVE MODULE ====================
 // Contains leave-related models
 
@@ -506,7 +502,6 @@ model LeavePolicy {
     @@map("leave_policies")
 }
 
-
 // ==================== NOTIFICATION MODULE ====================
 // Contains notification-related models
 
@@ -525,7 +520,6 @@ model Notification {
 
     @@map("notifications")
 }
-
 
 // ==================== AUTH MODULE ====================
 // Contains authentication-related models
@@ -567,17 +561,4 @@ model EmailVerificationToken {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@map("email_verification_tokens")
-}
-// ==================== SYSTEM SETTINGS ====================
-// Contains system-wide configuration
-
-model Setting {
-    id        String   @id @default(cuid())
-    key       String   @unique
-    value     Json
-    group     String   @default("GENERAL")
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@map("settings")
 }

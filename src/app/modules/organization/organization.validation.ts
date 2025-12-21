@@ -19,6 +19,7 @@ export const updateDepartmentValidationSchema = z.object({
 // Department filters validation
 export const departmentFiltersValidationSchema = z.object({
     isActive: z.boolean().optional(),
+    status: z.enum(['all', 'active', 'inactive']).optional(),
     search: z.string().max(100, 'Search term must be less than 100 characters').optional(),
     headId: z.string().cuid('Invalid department head ID').optional(),
 });
@@ -93,6 +94,7 @@ export const updateBatchValidationSchema = z.object({
 export const batchFiltersValidationSchema = z.object({
     year: z.number().int().min(2000, 'Year must be at least 2000').max(2100, 'Year must be at most 2100').optional(),
     isActive: z.boolean().optional(),
+    status: z.enum(['all', 'active', 'inactive']).optional(),
     search: z.string().max(100, 'Search term must be less than 100 characters').optional(),
 });
 
