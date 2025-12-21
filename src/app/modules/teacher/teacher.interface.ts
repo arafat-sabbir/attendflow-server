@@ -1,0 +1,305 @@
+import { User, Course, Attendance, LeaveRequest } from '@prisma/client';
+
+// Define types locally since they're not yet exported from @prisma/client
+export interface Teacher {
+    id: string;
+    userId: string;
+    employeeId: string;
+    departmentId: string;
+    designation?: string;
+    specialization?: string;
+    joinDate: Date;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface Department {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    headId?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface Batch {
+    id: string;
+    name: string;
+    year: number;
+    description?: string;
+    startDate: Date;
+    endDate: Date;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface Subject {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    credits: number;
+    departmentId: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface ClassSchedule {
+    id: string;
+    teacherId: string;
+    courseId: string;
+    batchId: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    room?: string;
+    semester: number;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+
+// Export the types
+export type ITeacher = Teacher;
+export type ICourse = Course;
+export type IAttendance = Attendance;
+export type ILeave = LeaveRequest;
+export type IDepartment = Department;
+export type IBatch = Batch;
+export type ISubject = Subject;
+export type IClassSchedule = ClassSchedule;
+
+// Teacher with related User information
+export interface ITeacherWithUser extends Teacher {
+    user: User;
+    department: Department;
+}
+
+// Teacher with courses information
+export interface ITeacherWithCourses extends ITeacherWithUser {
+    courses: Course[];
+}
+
+// Teacher profile with complete information
+export interface ITeacherProfile extends ITeacherWithUser {
+    totalCourses: number;
+    totalStudents: number;
+    upcomingClasses: IClassSchedule[];
+    recentAttendance: IAttendanceRecord[];
+    pendingLeaveRequests: ILeaveRequest[];
+}
+
+// For creating a new teacher profile
+export interface ITeacherCreate {
+    userId: string;
+    employeeId: string;
+    departmentId: string;
+    designation?: string;
+    specialization?: string;
+}
+
+// For updating a teacher profile
+export interface ITeacherUpdate extends Partial<ITeacherCreate> {
+    isActive?: boolean;
+}
+
+// Teacher attendance record view
+export interface IAttendanceRecord {
+    id: string;
+    date: Date;
+    status: string;
+    checkIn?: Date | null;
+    checkOut?: Date | null;
+    notes?: string | null;
+    student: {
+        id: string;
+        name: string;
+        email: string;
+        studentId: string;
+    };
+    course: {
+        id: string;
+        title: string;
+        code: string;
+    };
+}
+
+// Teacher marking attendance
+export interface IMarkAttendance {
+    studentId: string;
+    courseId: string;
+    date: string;
+    status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+    checkIn?: Date;
+    checkOut?: Date;
+    notes?: string;
+}
+
+// Bulk attendance marking
+export interface IBulkMarkAttendance {
+    courseId: string;
+    date: string;
+    attendances: {
+        studentId: string;
+        status: 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+        checkIn?: Date;
+        checkOut?: Date;
+        notes?: string;
+    }[];
+}
+
+// Leave request for teacher approval
+export interface ILeaveRequest {
+    id: string;
+    userId: string;
+    startDate: Date;
+    endDate: Date;
+    reason: string;
+    status: string;
+    approvedBy?: string | null;
+    approvedAt?: Date | null;
+    rejectionReason?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        studentId?: string;
+    };
+}
+
+// Teacher approving/rejecting leave
+export interface ILeaveApproval {
+    leaveId: string;
+    status: 'APPROVED' | 'REJECTED';
+    rejectionReason?: string;
+}
+
+// Class schedule view
+export interface IClassScheduleView extends ClassSchedule {
+    course: Course;
+    batch: Batch;
+}
+
+// Teacher creating class schedule
+export interface ICreateClassSchedule {
+    courseId: string;
+    batchId: string;
+    dayOfWeek: number; // 1-7 (Monday-Sunday)
+    startTime: string; // e.g., "09:00"
+    endTime: string; // e.g., "10:30"
+    room?: string;
+    semester?: number;
+}
+
+
+// Teacher dashboard data
+export interface ITeacherDashboard {
+    profile: ITeacherProfile;
+    todaySchedule: IClassScheduleView[];
+    upcomingClasses: IClassScheduleView[];
+    recentAttendance: IAttendanceRecord[];
+    pendingLeaveRequests: ILeaveRequest[];
+    classStatistics: {
+        totalClasses: number;
+        totalStudents: number;
+        averageAttendance: number;
+    };
+    notifications: {
+        id: string;
+        title: string;
+        message: string;
+        type: string;
+        createdAt: Date;
+        isRead: boolean;
+    }[];
+}
+
+// Teacher filters for queries
+export interface ITeacherFilters {
+    departmentId?: string;
+    designation?: string;
+    specialization?: string;
+    isActive?: boolean;
+    search?: string;
+    dateRange?: {
+        start: Date;
+        end: Date;
+    };
+}
+
+// Teacher statistics
+export interface ITeacherStats {
+    totalTeachers: number;
+    activeTeachers: number;
+    inactiveTeachers: number;
+    teachersByDepartment: Record<string, number>;
+    teachersByDesignation: Record<string, number>;
+}
+
+// Course statistics for teacher
+export interface ICourseStats {
+    courseId: string;
+    courseTitle: string;
+    totalStudents: number;
+    averageAttendance: number;
+    lastClassDate?: Date;
+    nextClassDate?: Date;
+}
+
+// Attendance summary for a course
+export interface ICourseAttendanceSummary {
+    courseId: string;
+    courseTitle: string;
+    totalClasses: number;
+    presentCount: number;
+    absentCount: number;
+    lateCount: number;
+    excusedCount: number;
+    attendancePercentage: number;
+    studentBreakdown: {
+        studentId: string;
+        name: string;
+        attendancePercentage: number;
+    }[];
+}
+
+// Subject management
+export interface ISubjectCreate {
+    name: string;
+    code: string;
+    description?: string;
+    credits?: number;
+    departmentId: string;
+}
+
+export interface ISubjectUpdate extends Partial<ISubjectCreate> {
+    isActive?: boolean;
+}
+
+// Teacher course assignment
+export interface ITeacherCourseAssignment {
+    teacherId: string;
+    courseId: string;
+    semester?: number;
+}
+
+// API Response types
+export interface ITeacherResponse<T = any> {
+    success: boolean;
+    message: string;
+    data?: T;
+    meta?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+        totalPages?: number;
+    };
+}

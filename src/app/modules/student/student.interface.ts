@@ -1,0 +1,159 @@
+import { User, Student, Batch, Department, Course, Attendance, LeaveRequest } from '@prisma/client';
+
+// Export the Prisma-generated types
+export type IStudent = Student;
+export type IBatch = Batch;
+export type IDepartment = Department;
+export type ICourse = Course;
+export type IAttendance = Attendance;
+export type ILeaveRequest = LeaveRequest;
+
+// Student with related User information
+export interface IStudentWithUser extends Student {
+    user: User;
+    batch: Batch;
+    department: Department;
+}
+
+// Student with attendance records
+export interface IStudentWithAttendance extends IStudentWithUser {
+    attendanceRecords: Attendance[];
+}
+
+// Student with leave requests
+export interface IStudentWithLeaves extends IStudentWithUser {
+    leaveRequests: LeaveRequest[];
+}
+
+// Student profile with complete information
+export interface IStudentProfile extends IStudentWithUser {
+    totalCourses: number;
+    totalAttendances: number;
+    totalLeaves: number;
+    attendancePercentage?: number;
+    approvedLeaves?: number;
+    pendingLeaves?: number;
+}
+
+// For creating a new student profile
+export interface IStudentCreate {
+    userId: string;
+    studentId: string;
+    batchId: string;
+    departmentId: string;
+    semester?: number;
+    gpa?: number;
+    credits?: number;
+}
+
+// For updating a student profile
+export interface IStudentUpdate extends Partial<IStudentCreate> {
+    isActive?: boolean;
+}
+
+// Student attendance view
+export interface IStudentAttendanceView {
+    id: string;
+    date: Date;
+    status: string;
+    checkIn?: Date;
+    checkOut?: Date;
+    notes?: string;
+    course: {
+        id: string;
+        title: string;
+        code: string;
+    };
+}
+
+// Student leave request
+export interface IStudentLeaveRequest {
+    startDate: Date;
+    endDate: Date;
+    reason: string;
+}
+
+// Student leave response
+export interface IStudentLeaveResponse extends LeaveRequest {
+    user: {
+        id: string;
+        name: string;
+        email: string;
+    };
+}
+
+// Student profile update
+export interface IStudentProfileUpdate {
+    name?: string;
+    username?: string;
+    avatar?: string;
+    phone?: string;
+    address?: string;
+    dateOfBirth?: Date;
+}
+
+// Student statistics
+export interface IStudentStats {
+    totalStudents: number;
+    activeStudents: number;
+    inactiveStudents: number;
+    studentsByBatch: Record<string, number>;
+    studentsByDepartment: Record<string, number>;
+    averageGPA: number;
+}
+
+// Student filters for queries
+export interface IStudentFilters {
+    batchId?: string;
+    departmentId?: string;
+    semester?: number;
+    isActive?: boolean;
+    search?: string;
+    dateRange?: {
+        start: Date;
+        end: Date;
+    };
+}
+
+// Student attendance summary
+export interface IStudentAttendanceSummary {
+    totalClasses: number;
+    presentCount: number;
+    absentCount: number;
+    lateCount: number;
+    excusedCount: number;
+    attendancePercentage: number;
+    monthlyBreakdown: {
+        month: string;
+        present: number;
+        absent: number;
+        late: number;
+        excused: number;
+    }[];
+}
+
+// Student dashboard data
+export interface IStudentDashboard {
+    profile: IStudentProfile;
+    recentAttendance: IStudentAttendanceView[];
+    upcomingClasses: {
+        id: string;
+        title: string;
+        code: string;
+        nextClass: Date;
+    }[];
+    leaveSummary: {
+        total: number;
+        approved: number;
+        pending: number;
+        rejected: number;
+    };
+    notifications: {
+        id: string;
+        title: string;
+        message: string;
+        type: string;
+        createdAt: Date;
+        isRead: boolean;
+    }[];
+}

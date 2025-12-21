@@ -1,0 +1,535 @@
+import { TeacherModel, ClassScheduleModel, SubjectModel, TeacherAttendanceModel, TeacherLeaveModel } from './teacher.model';
+import {
+    ITeacher,
+    ITeacherCreate,
+    ITeacherUpdate,
+    ITeacherFilters,
+    ITeacherWithUser,
+    ITeacherProfile,
+    ITeacherStats,
+    IMarkAttendance,
+    IBulkMarkAttendance,
+    IAttendanceRecord,
+    IClassScheduleView,
+    ICreateClassSchedule,
+    ILeaveApproval,
+    ILeaveRequest,
+    ISubjectCreate,
+    ISubjectUpdate,
+    ITeacherDashboard,
+    ICourseStats,
+    ICourseAttendanceSummary,
+    ITeacherResponse
+} from './teacher.interface';
+import AppError from '../../errors/AppError';
+import { StatusCodes } from 'http-status-codes';
+
+// Teacher profile services
+export const createTeacherProfile = async (data: ITeacherCreate): Promise<ITeacherWithUser> => {
+    try {
+        // Check if teacher profile already exists for this user
+        const existingTeacher = await TeacherModel.findByUserId(data.userId);
+        if (existingTeacher) {
+            throw new AppError(StatusCodes.CONFLICT, 'Teacher profile already exists for this user');
+        }
+
+        // Check if employee ID is already taken
+        const existingEmployeeId = await TeacherModel.findByEmployeeId(data.employeeId);
+        if (existingEmployeeId) {
+            throw new AppError(StatusCodes.CONFLICT, 'Employee ID already exists');
+        }
+
+        return await TeacherModel.create(data) as unknown as ITeacherWithUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTeacherProfile = async (teacherId: string): Promise<ITeacherWithUser | null> => {
+    try {
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Teacher profile not found');
+        }
+        return teacher as unknown as ITeacherWithUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTeacherProfileByUserId = async (userId: string): Promise<ITeacherWithUser | null> => {
+    try {
+        const teacher = await TeacherModel.findByUserId(userId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Teacher profile not found');
+        }
+        return teacher as unknown as ITeacherWithUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateTeacherProfile = async (teacherId: string, data: ITeacherUpdate): Promise<ITeacherWithUser> => {
+    try {
+        // Check if teacher exists
+        const existingTeacher = await TeacherModel.findById(teacherId);
+        if (!existingTeacher) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Teacher profile not found');
+        }
+
+        // Check if employee ID is being updated and if it's already taken
+        if (data.employeeId) {
+            const existingEmployeeId = await TeacherModel.findByEmployeeId(data.employeeId);
+            if (existingEmployeeId && existingEmployeeId.id !== teacherId) {
+                throw new AppError(StatusCodes.CONFLICT, 'Employee ID already exists');
+            }
+        }
+
+        return await TeacherModel.update(teacherId, data) as unknown as ITeacherWithUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteTeacherProfile = async (teacherId: string): Promise<void> => {
+    try {
+        const existingTeacher = await TeacherModel.findById(teacherId);
+        if (!existingTeacher) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Teacher profile not found');
+        }
+
+        await TeacherModel.delete(teacherId);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getAllTeachers = async (filters: ITeacherFilters): Promise<ITeacher[]> => {
+    try {
+        return await TeacherModel.findMany(filters) as unknown as ITeacher[];
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTeacherStats = async (): Promise<ITeacherStats> => {
+    try {
+        return await TeacherModel.getStats();
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Attendance services
+export const markAttendance = async (teacherId: string, data: IMarkAttendance): Promise<IAttendanceRecord> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to mark attendance');
+        }
+
+        // Mark attendance
+        const attendance = await TeacherAttendanceModel.markAttendance({
+            ...data,
+            markedBy: teacherId,
+        });
+
+        // Transform to match IAttendanceRecord interface
+        return {
+            ...attendance,
+            student: {
+                id: attendance.userId,
+                name: '', // Get from user data
+                email: '', // Get from user data
+                studentId: '', // Get from student data
+            },
+            course: {
+                id: attendance.courseId,
+                title: '', // Get from course data
+                code: '', // Get from course data
+            },
+        } as IAttendanceRecord;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const bulkMarkAttendance = async (teacherId: string, data: IBulkMarkAttendance): Promise<IAttendanceRecord[]> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to mark attendance');
+        }
+
+        // Bulk mark attendance
+        const attendances = await TeacherAttendanceModel.bulkMarkAttendance(
+            data.courseId,
+            new Date(data.date),
+            data.attendances,
+            teacherId
+        );
+
+        // Transform to match IAttendanceRecord interface
+        return attendances.map(attendance => ({
+            ...attendance,
+            student: {
+                id: attendance.userId,
+                name: '', // Get from user data
+                email: '', // Get from user data
+                studentId: '', // Get from student data
+            },
+            course: {
+                id: attendance.courseId,
+                title: '', // Get from course data
+                code: '', // Get from course data
+            },
+        }));
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getCourseAttendance = async (teacherId: string, courseId: string, filters: any = {}): Promise<IAttendanceRecord[]> => {
+    try {
+        // Verify teacher exists and has access to this course
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view attendance');
+        }
+
+        // Get attendance records
+        const attendance = await TeacherAttendanceModel.getCourseAttendance(courseId, filters);
+
+        return attendance as unknown as IAttendanceRecord[];
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getCourseAttendanceSummary = async (teacherId: string, courseId: string, startDate?: Date, endDate?: Date): Promise<ICourseAttendanceSummary> => {
+    try {
+        // Verify teacher exists and has access to this course
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view attendance summary');
+        }
+
+        // Get attendance summary
+        const summary = await TeacherAttendanceModel.getCourseAttendanceSummary(courseId, startDate, endDate);
+
+        // Transform to match ICourseAttendanceSummary interface
+        return {
+            ...summary,
+            courseTitle: '', // Get from course data
+        } as ICourseAttendanceSummary;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Leave management services
+export const getPendingLeaveRequests = async (teacherId: string): Promise<ILeaveRequest[]> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view leave requests');
+        }
+
+        // Get pending leave requests
+        const leaveRequests = await TeacherLeaveModel.getPendingLeaves(teacherId);
+
+        return leaveRequests;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const processLeaveRequest = async (teacherId: string, data: ILeaveApproval): Promise<ILeaveRequest> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to process leave requests');
+        }
+
+        // Process leave request
+        const processedLeave = await TeacherLeaveModel.processLeaveRequest(
+            data.leaveId,
+            data.status,
+            teacherId,
+            data.rejectionReason
+        );
+
+        // Transform to match ILeaveRequest interface
+        return {
+            ...processedLeave,
+            user: {
+                id: processedLeave.userId,
+                name: '', // Get from user data
+                email: '', // Get from user data
+                studentId: '', // Get from student data
+            },
+        } as ILeaveRequest;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getProcessedLeaves = async (teacherId: string): Promise<ILeaveRequest[]> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view processed leaves');
+        }
+
+        // Get processed leave requests
+        const processedLeaves = await TeacherLeaveModel.getProcessedLeaves(teacherId);
+
+        return processedLeaves;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Class schedule services
+export const createClassSchedule = async (teacherId: string, data: ICreateClassSchedule): Promise<IClassScheduleView> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to create class schedule');
+        }
+
+        // Create class schedule
+        const schedule = await ClassScheduleModel.create({
+            ...data,
+            teacherId,
+        });
+
+        return schedule as unknown as IClassScheduleView;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTeacherSchedules = async (teacherId: string): Promise<IClassScheduleView[]> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view schedules');
+        }
+
+        // Get teacher's schedules
+        const schedules = await ClassScheduleModel.findByTeacherId(teacherId);
+
+        return schedules as unknown as IClassScheduleView[];
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getTodaySchedule = async (teacherId: string): Promise<IClassScheduleView[]> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to view schedule');
+        }
+
+        // Get today's schedule
+        const todaySchedule = await ClassScheduleModel.getTodaySchedule(teacherId);
+
+        return todaySchedule as unknown as IClassScheduleView[];
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateClassSchedule = async (teacherId: string, scheduleId: string, data: Partial<ICreateClassSchedule>): Promise<IClassScheduleView> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to update class schedule');
+        }
+
+        // Update class schedule
+        const updatedSchedule = await ClassScheduleModel.update(scheduleId, data);
+
+        return updatedSchedule as unknown as IClassScheduleView;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteClassSchedule = async (teacherId: string, scheduleId: string): Promise<void> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.UNAUTHORIZED, 'Unauthorized to delete class schedule');
+        }
+
+        // Delete class schedule
+        await ClassScheduleModel.delete(scheduleId);
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Subject management services
+export const createSubject = async (data: ISubjectCreate): Promise<any> => {
+    try {
+        return await SubjectModel.create(data);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getAllSubjects = async (filters: any = {}): Promise<any[]> => {
+    try {
+        return await SubjectModel.findMany(filters);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const getSubjectById = async (subjectId: string): Promise<any | null> => {
+    try {
+        const subject = await SubjectModel.findById(subjectId);
+        if (!subject) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Subject not found');
+        }
+        return subject;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateSubject = async (subjectId: string, data: ISubjectUpdate): Promise<any> => {
+    try {
+        const existingSubject = await SubjectModel.findById(subjectId);
+        if (!existingSubject) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Subject not found');
+        }
+
+        return await SubjectModel.update(subjectId, data);
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteSubject = async (subjectId: string): Promise<void> => {
+    try {
+        const existingSubject = await SubjectModel.findById(subjectId);
+        if (!existingSubject) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Subject not found');
+        }
+
+        await SubjectModel.delete(subjectId);
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+// Dashboard service
+export const getTeacherDashboard = async (teacherId: string): Promise<ITeacherDashboard> => {
+    try {
+        // Verify teacher exists
+        const teacher = await TeacherModel.findById(teacherId);
+        if (!teacher) {
+            throw new AppError(StatusCodes.NOT_FOUND, 'Teacher profile not found');
+        }
+
+        // Get today's schedule
+        const todaySchedule = await ClassScheduleModel.getTodaySchedule(teacherId);
+
+        // Get upcoming classes (next 7 days)
+        const upcomingClasses = await ClassScheduleModel.findByTeacherId(teacherId); // Filter in service
+
+        // Get recent attendance
+        const recentAttendance = await TeacherAttendanceModel.getCourseAttendance('', { limit: 10 }); // Get recent attendance
+
+        // Get pending leave requests
+        const pendingLeaveRequests = await TeacherLeaveModel.getPendingLeaves(teacherId);
+
+        // Create dashboard data
+        const dashboard: ITeacherDashboard = {
+            profile: teacher as unknown as ITeacherProfile, // Convert to profile format
+            todaySchedule: todaySchedule as unknown as IClassScheduleView[],
+            upcomingClasses: upcomingClasses as unknown as IClassScheduleView[],
+            recentAttendance: recentAttendance.map(attendance => ({
+                ...attendance,
+                student: {
+                    id: attendance.userId,
+                    name: '', // Get from user data
+                    email: '', // Get from user data
+                    studentId: '', // Get from student data
+                },
+                course: {
+                    id: attendance.courseId,
+                    title: '', // Get from course data
+                    code: '', // Get from course data
+                },
+            } as IAttendanceRecord)),
+            pendingLeaveRequests,
+            classStatistics: {
+                totalClasses: 0, // Calculate from actual data
+                totalStudents: 0, // Calculate from actual data
+                averageAttendance: 0, // Calculate from actual data
+            },
+            notifications: [], // Get from notification service
+        };
+
+        return dashboard;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Export all services
+export const TeacherService = {
+    // Profile services
+    createTeacherProfile,
+    getTeacherProfile,
+    getTeacherProfileByUserId,
+    updateTeacherProfile,
+    deleteTeacherProfile,
+    getAllTeachers,
+    getTeacherStats,
+
+    // Attendance services
+    markAttendance,
+    bulkMarkAttendance,
+    getCourseAttendance,
+    getCourseAttendanceSummary,
+
+    // Leave management services
+    getPendingLeaveRequests,
+    processLeaveRequest,
+    getProcessedLeaves,
+
+    // Class schedule services
+    createClassSchedule,
+    getTeacherSchedules,
+    getTodaySchedule,
+    updateClassSchedule,
+    deleteClassSchedule,
+
+    // Subject management services
+    createSubject,
+    getAllSubjects,
+    getSubjectById,
+    updateSubject,
+    deleteSubject,
+
+
+    // Dashboard service
+    getTeacherDashboard,
+};
