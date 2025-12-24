@@ -24,7 +24,7 @@ export const updateTeacherValidationSchema = z.object({
 
 // Teacher filters validation
 export const teacherFiltersValidationSchema = z.object({
-    departmentId: z.string().cuid('Invalid department ID').optional(),
+    departmentId: z.string().optional(),
     designation: z.string().optional(),
     specialization: z.string().optional(),
     isActive: z.boolean().optional(),
@@ -94,6 +94,19 @@ export const updateSubjectValidationSchema = z.object({
     credits: z.number().int().min(0, 'Credits must be at least 0').max(10, 'Credits must be at most 10').optional(),
     departmentId: z.string().cuid('Invalid department ID').optional(),
     isActive: z.boolean().optional(),
+});
+
+// Subject filters validation
+export const subjectFiltersValidationSchema = z.object({
+    query: z.object({
+        search: z.string().optional(),
+        departmentId: z.string().optional(),
+        isActive: z.enum(['true', 'false']).optional(),
+        page: z.string().regex(/^\d+$/, 'Page must be a number').optional(),
+        limit: z.string().regex(/^\d+$/, 'Limit must be a number').optional(),
+        sortBy: z.string().optional(),
+        sortOrder: z.enum(['asc', 'desc']).optional(),
+    }),
 });
 
 
@@ -191,6 +204,7 @@ export const TeacherValidation = {
     createClassSchedule: createClassScheduleValidationSchema,
     createSubject: createSubjectValidationSchema,
     updateSubject: updateSubjectValidationSchema,
+    subjectFilters: subjectFiltersValidationSchema,
     teacherCourseAssignment: teacherCourseAssignmentValidationSchema,
     teacherDepartmentAssignment: teacherDepartmentAssignmentValidationSchema,
     bulkTeacherAssignment: bulkTeacherAssignmentValidationSchema,

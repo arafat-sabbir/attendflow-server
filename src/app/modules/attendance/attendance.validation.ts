@@ -131,6 +131,7 @@ const attendanceFiltersSchema = z.object({
         }, 'Invalid end date format').optional(),
         batchId: z.string().optional(),
         departmentId: z.string().optional(),
+        reportType: z.string().optional(),
         page: z.string().regex(/^\d+$/, 'Page must be a number').optional(),
         limit: z.string().regex(/^\d+$/, 'Limit must be a number').optional(),
         sortBy: z.string().optional(),

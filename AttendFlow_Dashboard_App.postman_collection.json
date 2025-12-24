@@ -19,7 +19,7 @@
     {
       "key": "base_url",
       "value": "http://localhost:5000/api/v1",
-      "type": "string"
+      "type": "strintatg"
     },
     {
       "key": "jwt_token",
@@ -83,6 +83,16 @@
     },
     {
       "key": "tokenId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "enrollmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "scheduleId",
       "value": "",
       "type": "string"
     }
@@ -578,6 +588,396 @@
                   "raw": "{{base_url}}/organization/subjects/{{subjectId}}",
                   "host": ["{{base_url}}"],
                   "path": ["organization", "subjects", "{{subjectId}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📚 Course Management",
+      "description": "Complete course management operations - Courses, Enrollments, and Class Schedules",
+      "item": [
+        {
+          "name": "🎯 Course CRUD Operations",
+          "description": "CRUD operations for courses",
+          "item": [
+            {
+              "name": "Create Course",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Data Structures and Algorithms\",\n  \"code\": \"DSA101\",\n  \"description\": \"Fundamental concepts of data structures and algorithm analysis\",\n  \"credits\": 3,\n  \"batchId\": \"{{batchId}}\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"teacherId\": \"{{teacherId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"semesterId\": \"{{semesterId}}\",\n  \"semester\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/course/courses",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('courseId', response.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get All Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/courses?departmentId={{departmentId}}&batchId={{batchId}}&teacherId={{teacherId}}&isActive=true&page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses"],
+                  "query": [
+                    {
+                      "key": "departmentId",
+                      "value": "{{departmentId}}"
+                    },
+                    {
+                      "key": "batchId",
+                      "value": "{{batchId}}"
+                    },
+                    {
+                      "key": "teacherId",
+                      "value": "{{teacherId}}"
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Course Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/courses/stats",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses", "stats"]
+                }
+              }
+            },
+            {
+              "name": "Get Single Course",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/courses/{{courseId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses", "{{courseId}}"]
+                }
+              }
+            },
+            {
+              "name": "Update Course",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Data Structures and Algorithms - Updated\",\n  \"description\": \"Updated course description with advanced topics\",\n  \"credits\": 4,\n  \"isActive\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/course/courses/{{courseId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses", "{{courseId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Course",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/courses/{{courseId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "courses", "{{courseId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "👥 Course Enrollment Management",
+          "description": "Manage student enrollments in courses",
+          "item": [
+            {
+              "name": "Enroll Student in Course",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"courseId\": \"{{courseId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/course/enrollments",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "enrollments"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('enrollmentId', response.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get All Course Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/enrollments?studentId={{studentId}}&courseId={{courseId}}&page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "enrollments"],
+                  "query": [
+                    {
+                      "key": "studentId",
+                      "value": "{{studentId}}"
+                    },
+                    {
+                      "key": "courseId",
+                      "value": "{{courseId}}"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Course Enrollment Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/enrollments/stats",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "enrollments", "stats"]
+                }
+              }
+            },
+            {
+              "name": "Get Single Course Enrollment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/enrollments/{{enrollmentId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "enrollments", "{{enrollmentId}}"]
+                }
+              }
+            },
+            {
+              "name": "Remove Student from Course",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/enrollments/{{enrollmentId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "enrollments", "{{enrollmentId}}"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "📅 Class Schedule Management",
+          "description": "Manage class schedules and timetables",
+          "item": [
+            {
+              "name": "Create Class Schedule",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"teacherId\": \"{{teacherId}}\",\n  \"courseId\": \"{{courseId}}\",\n  \"batchId\": \"{{batchId}}\",\n  \"dayOfWeek\": 1,\n  \"startTime\": \"09:00\",\n  \"endTime\": \"10:30\",\n  \"room\": \"Room 101\",\n  \"semester\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/course/schedules",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules"]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    pm.collectionVariables.set('scheduleId', response.data.id);",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get All Class Schedules",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/schedules?teacherId={{teacherId}}&courseId={{courseId}}&batchId={{batchId}}&dayOfWeek=1&semester=1&isActive=true&page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules"],
+                  "query": [
+                    {
+                      "key": "teacherId",
+                      "value": "{{teacherId}}"
+                    },
+                    {
+                      "key": "courseId",
+                      "value": "{{courseId}}"
+                    },
+                    {
+                      "key": "batchId",
+                      "value": "{{batchId}}"
+                    },
+                    {
+                      "key": "dayOfWeek",
+                      "value": "1"
+                    },
+                    {
+                      "key": "semester",
+                      "value": "1"
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Class Schedule Statistics",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/schedules/stats",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules", "stats"]
+                }
+              }
+            },
+            {
+              "name": "Get Single Class Schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/schedules/{{scheduleId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules", "{{scheduleId}}"]
+                }
+              }
+            },
+            {
+              "name": "Update Class Schedule",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:30\",\n  \"room\": \"Room 102\",\n  \"isActive\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/course/schedules/{{scheduleId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules", "{{scheduleId}}"]
+                }
+              }
+            },
+            {
+              "name": "Delete Class Schedule",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/course/schedules/{{scheduleId}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["course", "schedules", "{{scheduleId}}"]
                 }
               }
             }
@@ -1446,7 +1846,7 @@
       "description": "QR code generation and validation for attendance",
       "item": [
         {
-          "name": "Generate QR Code",
+          "name": "Generate QR Code (Enhanced)",
           "request": {
             "method": "POST",
             "header": [
@@ -1457,14 +1857,31 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"teacherId\": \"{{teacherId}}\"\n}"
+              "raw": "{\n  \"courseId\": \"{{courseId}}\",\n  \"teacherId\": \"{{teacherId}}\",\n  \"validFrom\": \"2025-12-24T10:00:00Z\",\n  \"validUntil\": \"2025-12-24T10:30:00Z\",\n  \"maxUses\": 50,\n  \"location\": \"Room 101\",\n  \"description\": \"Lecture 5 - Data Structures\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/qr/generate",
               "host": ["{{base_url}}"],
               "path": ["qr", "generate"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('tokenId', response.data.id);",
+                  "    pm.collectionVariables.set('qrCode', response.data.code);",
+                  "    console.log('✅ QR Token Generated:', response.data.code);",
+                  "} else {",
+                  "    console.log('❌ QR Generation Failed:', pm.response.code, pm.response.json());",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Validate QR Code",
@@ -1478,7 +1895,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"token\": \"qr-token-here\",\n  \"userId\": \"{{user_id}}\",\n  \"studentId\": \"{{studentId}}\"\n}"
+              "raw": "{\n  \"token\": \"{{qrCode}}\",\n  \"userId\": \"{{user_id}}\",\n  \"location\": \"Room 101\",\n  \"ipAddress\": \"192.168.1.100\",\n  \"userAgent\": \"AttendFlow Mobile App 1.0\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/qr/validate",

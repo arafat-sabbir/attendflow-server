@@ -11,9 +11,35 @@ export const createQRTokenValidationSchema = z.object({
         }),
         validFrom: z.string().datetime().optional(),
         validUntil: z.string().datetime().optional(),
-        maxUses: z.number().min(1).optional(),
-        location: z.string().optional(),
-        description: z.string().optional(),
+        maxUses: z.number().min(1).max(1000).optional(),
+        location: z.string().max(255).optional(),
+        description: z.string().max(500).optional(),
+    }).refine((data) => {
+        // Custom validation for date range
+        if (data.validFrom && data.validUntil) {
+            const from = new Date(data.validFrom);
+            const until = new Date(data.validUntil);
+            if (until <= from) {
+                return false;
+            }
+        }
+        return true;
+    }, {
+        message: 'validUntil must be after validFrom',
+        path: ['validUntil'],
+    }).refine((data) => {
+        // Custom validation to ensure dates are not too far in the future
+        if (data.validUntil) {
+            const until = new Date(data.validUntil);
+            const maxDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+            if (until > maxDate) {
+                return false;
+            }
+        }
+        return true;
+    }, {
+        message: 'validUntil cannot be more than 24 hours from now',
+        path: ['validUntil'],
     }),
 });
 
@@ -26,10 +52,9 @@ export const validateQRTokenValidationSchema = z.object({
         userId: z.string().min(1, {
             message: 'User ID is required',
         }),
-        studentId: z.string().min(1, {
-            message: 'Student ID is required',
-        }),
         location: z.string().optional(),
+        ipAddress: z.string().optional(),
+        userAgent: z.string().optional(),
     }),
 });
 

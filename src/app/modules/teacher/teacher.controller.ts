@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { TeacherService } from './teacher.service';
 import { TeacherValidation } from './teacher.validation';
 import { ITeacherResponse } from './teacher.interface';
-import sendResponse from '../../utils/sendResponse';
+import sendResponse, { sendPaginatedResponse } from '../../utils/sendResponse';
 import catchAsync from '../../utils/catchAsync';
 import { StatusCodes } from 'http-status-codes';
 
@@ -67,11 +67,7 @@ export const getAllTeachers = catchAsync(async (req: Request, res: Response) => 
     const filters = TeacherValidation.teacherFilters.parse(req.query) as any;
     const result = await TeacherService.getAllTeachers(filters);
 
-    sendResponse(res, {
-        statusCode: StatusCodes.OK,
-        message: 'Teachers retrieved successfully',
-        data: result,
-    });
+    sendPaginatedResponse(res, "teachers", result.data, result.meta, "Teachers retrieved successfully");
 });
 
 export const getTeacherStats = catchAsync(async (req: Request, res: Response) => {
@@ -260,11 +256,7 @@ export const getAllSubjects = catchAsync(async (req: Request, res: Response) => 
     const filters = req.query;
     const result = await TeacherService.getAllSubjects(filters);
 
-    sendResponse(res, {
-        statusCode: StatusCodes.OK,
-        message: 'Subjects retrieved successfully',
-        data: result,
-    });
+    sendPaginatedResponse(res, "subjects", result.data, result.meta, "Subjects retrieved successfully");
 });
 
 export const getSubjectById = catchAsync(async (req: Request, res: Response) => {

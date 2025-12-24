@@ -22,7 +22,7 @@ async function main() {
             email: 'admin@example.com',
             name: 'Super Admin',
             password: hashedPassword,
-            role: 'admin',
+            role: 'ADMIN',
         },
     });
 

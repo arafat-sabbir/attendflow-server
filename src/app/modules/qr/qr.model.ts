@@ -11,14 +11,43 @@ import {
     QRCodeStatus
 } from './qr.interface';
 
-// Utility function to generate a random token
-const generateRandomToken = (length: number = 32): string => {
+// Utility function to generate a cryptographically secure random token
+const generateSecureToken = (length: number = 32): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
     let result = '';
     for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
+        result += chars.charAt(array[i] % chars.length);
     }
     return result;
+};
+
+// Rate limiting store for QR validation attempts
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+
+// Rate limiting function
+const checkRateLimit = (identifier: string, maxAttempts: number = 5, windowMs: number = 60000): boolean => {
+    const now = Date.now();
+    const record = rateLimitStore.get(identifier);
+    
+    if (!record || now > record.resetTime) {
+        // First attempt or window expired
+        rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
+        return true;
+    }
+    
+    if (record.count >= maxAttempts) {
+        return false;
+    }
+    
+    record.count++;
+    return true;
+};
+
+// Utility function to generate a random token (deprecated - use generateSecureToken)
+const generateRandomToken = (length: number = 32): string => {
+    return generateSecureToken(length);
 };
 
 // QR Token model operations
@@ -33,7 +62,6 @@ export const QRTokenModel = {
         const validFrom = data.validFrom || now;
         const validUntil = data.validUntil || new Date(now.getTime() + 2 * 60 * 60 * 1000); // Default 2 hours
         const maxUses = data.maxUses || 1;
-
         const result = await prisma.qRCode.create({
             data: {
                 code: token,
@@ -503,5 +531,8 @@ export const QRCheckInModel = {
         };
     },
 };
+
+// Export the checkRateLimit function for use in service
+export { checkRateLimit };
 
 export default QRTokenModel;

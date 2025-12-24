@@ -35,18 +35,28 @@ const generateQRToken = catchAsync(async (req: Request, res: Response) => {
 
 // Validate QR token for check-in
 const validateQRToken = catchAsync(async (req: Request, res: Response) => {
-    const { token, userId, location } = req.body;
+    const { token, userId, location, ipAddress, userAgent } = req.body;
 
-    const checkIn = await QRService.validateQRToken({
+    // Get client IP and user agent if not provided
+    const clientIp = ipAddress || req.ip || req.connection.remoteAddress;
+    const clientUserAgent = userAgent || req.get('User-Agent');
+
+    const result = await QRService.validateQRToken({
         token,
         userId,
         location,
+        ipAddress: clientIp,
+        userAgent: clientUserAgent,
     });
 
     sendResponse(res, {
         statusCode: 200,
         message: 'QR token validated and check-in recorded successfully',
-        data: checkIn,
+        data: {
+            checkIn: result.checkIn,
+            attendance: result.attendance,
+            message: 'QR token validated successfully. Attendance has been recorded.',
+        },
     });
 });
 
@@ -78,13 +88,13 @@ const getQRTokens = catchAsync(async (req: Request, res: Response) => {
         statusCode: 200,
         message: 'QR tokens retrieved successfully',
         data: {
+            tokens,
             meta: {
                 page: filters.page || 1,
                 limit: filters.limit || 10,
                 total,
                 totalPages: Math.ceil(total / (filters.limit || 10)),
             },
-            data: tokens,
         },
     });
 });

@@ -39,6 +39,7 @@ const authenticate = catchAsync(async (req: Request, res: Response, next: NextFu
 const authorize = (...roles: string[]) => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         // First check if user is authenticated
+        console.log(req.user);
         if (!req.user) {
             throw new AppError(StatusCodes.UNAUTHORIZED, 'Authentication required');
         }

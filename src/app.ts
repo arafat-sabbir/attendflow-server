@@ -50,9 +50,9 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+app.use(requestLogger);
 // Middleware setup
 app.use(express.json());
-app.use(requestLogger);
 app.use(
   cors({
     origin: ['http://localhost:5173'],

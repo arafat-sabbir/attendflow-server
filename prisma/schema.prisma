@@ -102,7 +102,6 @@ model User {
     classSchedules ClassSchedule[] @relation("TeacherSchedules")
 
     // Course relationships
-    taughtCourses     Course[]           @relation("TeacherCourses")
     courseEnrollments CourseEnrollment[]
 
     // Attendance relationships
@@ -271,7 +270,7 @@ model Course {
     credits      Int      @default(0)
     batchId      String? // OPTIONAL: Can be assigned later via assignment API
     departmentId String? // OPTIONAL: Can be assigned later via assignment API
-    teacherId    String? // OPTIONAL: Can be assigned later via assignment API
+    teacherId    String? // OPTIONAL: Can be assigned later via assignment API - NOW REFERENCES TEACHER TABLE
     subjectId    String? // OPTIONAL: Can be assigned later
     semesterId   String? // OPTIONAL: Can be assigned later
     semester     Int      @default(1)
@@ -280,8 +279,7 @@ model Course {
     updatedAt    DateTime @updatedAt
 
     // Relationships
-    teacher            User?               @relation("TeacherCourses", fields: [teacherId], references: [id], map: "course_teacher_fkey")
-    teacherProfile     Teacher?            @relation("TeacherProfileCourses", fields: [teacherId], references: [id], map: "course_teacher_profile_fkey")
+    teacherProfile     Teacher?            @relation("TeacherProfileCourses", fields: [teacherId], references: [id], map: "course_teacher_fkey")
     batch              Batch?              @relation(fields: [batchId], references: [id])
     department         Department?         @relation(fields: [departmentId], references: [id])
     subject            Subject?            @relation(fields: [subjectId], references: [id])

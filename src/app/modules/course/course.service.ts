@@ -20,6 +20,7 @@ import {
 import { CourseModel, CourseEnrollmentModel, ClassScheduleModel } from './course.model';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
+import prisma from '../../config/prisma';
 
 // Course services
 export const createCourse = async (data: ICourseCreate): Promise<Course> => {
@@ -33,11 +34,66 @@ export const createCourse = async (data: ICourseCreate): Promise<Course> => {
             throw new AppError(StatusCodes.CONFLICT, 'Course with this code already exists');
         }
 
+        // Check if teacher exists (checking Teacher table since teacherId references Teacher.id)
+        const teacherExists = await prisma.teacher.findUnique({
+            where: { id: data.teacherId },
+        });
+
+        if (!teacherExists) {
+            throw new AppError(StatusCodes.BAD_REQUEST, 'Teacher not found');
+        }
+
+        // Check if batch exists
+        if (data.batchId) {
+            const batchExists = await prisma.batch.findUnique({
+                where: { id: data.batchId },
+            });
+            console.log('Batch exists:', batchExists);
+            if (!batchExists) {
+                throw new AppError(StatusCodes.BAD_REQUEST, 'Batch not found');
+            }
+        }
+
+        // Check if department exists
+        if (data.departmentId) {
+            const departmentExists = await prisma.department.findUnique({
+                where: { id: data.departmentId },
+            });
+            if (!departmentExists) {
+                throw new AppError(StatusCodes.BAD_REQUEST, 'Department not found');
+            }
+        }
+
+        // Check if subject exists
+        if (data.subjectId) {
+            const subjectExists = await prisma.subject.findUnique({
+                where: { id: data.subjectId },
+            });
+            if (!subjectExists) {
+                throw new AppError(StatusCodes.BAD_REQUEST, 'Subject not found');
+            }
+        }
+
+        // Check if semester exists
+        if (data.semesterId) {
+            const semesterExists = await prisma.semester.findUnique({
+                where: { id: data.semesterId },
+            });
+            if (!semesterExists) {
+                throw new AppError(StatusCodes.BAD_REQUEST, 'Semester not found');
+            }
+        }
+
         return await CourseModel.create({
             data,
             include: {
-                teacher: {
-                    select: { id: true, name: true, email: true },
+                teacherProfile: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true, email: true },
+                        },
+                        department: true,
+                    },
                 },
                 batch: true,
                 department: true,
@@ -54,9 +110,6 @@ export const getCourseById = async (id: string): Promise<ICourseWithRelations | 
         const course = await CourseModel.findUnique({
             where: { id },
             include: {
-                teacher: {
-                    select: { id: true, name: true, email: true },
-                },
                 teacherProfile: {
                     include: {
                         user: {
@@ -131,8 +184,13 @@ export const updateCourse = async (id: string, data: ICourseUpdate): Promise<Cou
             where: { id },
             data,
             include: {
-                teacher: {
-                    select: { id: true, name: true, email: true },
+                teacherProfile: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true, email: true },
+                        },
+                        department: true,
+                    },
                 },
                 batch: true,
                 department: true,
@@ -208,8 +266,13 @@ export const getAllCourses = async (filters: ICourseFilters = {}): Promise<Cours
         return await CourseModel.findMany({
             where,
             include: {
-                teacher: {
-                    select: { id: true, name: true, email: true },
+                teacherProfile: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true, email: true },
+                        },
+                        department: true,
+                    },
                 },
                 batch: true,
                 department: true,
@@ -313,8 +376,13 @@ export const getCourseEnrollmentById = async (id: string): Promise<ICourseEnroll
                 },
                 course: {
                     include: {
-                        teacher: {
-                            select: { id: true, name: true, email: true },
+                        teacherProfile: {
+                            include: {
+                                user: {
+                                    select: { id: true, name: true, email: true },
+                                },
+                                department: true,
+                            },
                         },
                         batch: true,
                         department: true,

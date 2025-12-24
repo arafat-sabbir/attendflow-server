@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { userServices } from "./user.service";
 import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
+import sendResponse, { sendPaginatedResponse } from "../../utils/sendResponse";
 import { StatusCodes } from 'http-status-codes';
 import { userValidation } from './user.validation';
 
@@ -27,10 +27,7 @@ const getSingleUser = catchAsync(async (req: Request, res: Response) => {
 /** Get all Users */
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   const result = await userServices.getAllUsers(req.query);
-  sendResponse(res, {
-    message: "Users retrieved successfully",
-    data: result,
-  });
+  sendPaginatedResponse(res, "users", result.data, result.meta, "Users retrieved successfully");
 });
 
 /** Update a User */

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { attendanceControllers } from "./attendance.controller";
+import { AttendanceSessionController } from "./attendanceSession.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { attendanceValidation } from "./attendance.validation";
 import AuthorizeRequest from "../../middlewares/auth";
@@ -175,6 +176,49 @@ router.get(
     "/dashboard",
     AuthorizeRequest('TEACHER', 'ADMIN', 'SUPER_ADMIN'),
     attendanceControllers.getAttendanceDashboard
+);
+
+// New session management routes for HTTP-based attendance flow
+// POST /api/v1/attendance/sessions - Create attendance session
+router.post(
+    "/sessions",
+    AuthorizeRequest('TEACHER', 'ADMIN', 'SUPER_ADMIN'),
+    validateRequest(attendanceValidation.createAttendanceSessionSchema),
+    AttendanceSessionController.createAttendanceSession
+);
+
+// GET /api/v1/attendance/sessions/active - Get active session
+router.get(
+    "/sessions/active",
+    AttendanceSessionController.getActiveSession
+);
+
+// GET /api/v1/attendance/sessions/:sessionId/stats - Get session statistics for polling
+router.get(
+    "/sessions/:sessionId/stats",
+    validateRequest(attendanceValidation.idParamSchema),
+    AttendanceSessionController.getSessionStats
+);
+
+// POST /api/v1/attendance/sessions/:id/end - End attendance session
+router.post(
+    "/sessions/:id/end",
+    validateRequest(attendanceValidation.idParamSchema),
+    AttendanceSessionController.endSession
+);
+
+// GET /api/v1/attendance/sessions - Get attendance sessions with filters
+router.get(
+    "/sessions",
+    validateRequest(attendanceValidation.sessionFiltersSchema),
+    AttendanceSessionController.getAttendanceSessions
+);
+
+// GET /api/v1/attendance/sessions/:id - Get attendance session by ID
+router.get(
+    "/sessions/:id",
+    validateRequest(attendanceValidation.idParamSchema),
+    AttendanceSessionController.getAttendanceSessionById
 );
 
 export const attendanceRoutes = router;

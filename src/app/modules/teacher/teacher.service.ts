@@ -25,6 +25,7 @@ import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 import { generateTeacherId, generateTeacherUserId } from '../../utils/idGenerator';
 import prisma from '../../config/prisma';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 // Teacher profile services
 export const createTeacherProfile = async (data: ITeacherCreate): Promise<ITeacherWithUser> => {
@@ -146,9 +147,81 @@ export const deleteTeacherProfile = async (teacherId: string): Promise<void> => 
     }
 };
 
-export const getAllTeachers = async (filters: ITeacherFilters): Promise<ITeacher[]> => {
+export const getAllTeachers = async (filters: any): Promise<{ data: ITeacher[]; meta: any }> => {
     try {
-        return await TeacherModel.findMany(filters) as unknown as ITeacher[];
+        const queryBuilder = new QueryBuilder(filters);
+
+        // Build query with search, filter, sort, pagination, and field selection
+        queryBuilder.search(['employeeId']).filter().sort().paginate().fields();
+
+        const queryOptions = queryBuilder.getQueryOptions();
+
+        // Execute query
+        const [teachers, total] = await Promise.all([
+            prisma.teacher.findMany({
+                where: {
+                    ...queryOptions.where,
+                    ...(filters.departmentId && filters.departmentId !== 'all' && { departmentId: filters.departmentId }),
+                    ...(() => {
+                        let isActiveFilter;
+                        if (filters.status === 'active') {
+                            isActiveFilter = true;
+                        } else if (filters.status === 'inactive') {
+                            isActiveFilter = false;
+                        } else if (filters.isActive !== undefined) {
+                            isActiveFilter = filters.isActive === 'true';
+                        }
+                        return isActiveFilter !== undefined ? { user: { status: isActiveFilter ? 'ACTIVE' : 'INACTIVE' } } : {};
+                    })(),
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            phone: true,
+                            avatar: true,
+                            status: true,
+                        },
+                    },
+                    department: {
+                        select: {
+                            id: true,
+                            name: true,
+                            code: true,
+                        },
+                    },
+                },
+                orderBy: queryOptions.orderBy,
+                skip: queryOptions.skip,
+                take: queryOptions.take,
+            }),
+            prisma.teacher.count({
+                where: {
+                    ...queryOptions.where,
+                    ...(filters.departmentId && filters.departmentId !== 'all' && { departmentId: filters.departmentId }),
+                    ...(() => {
+                        let isActiveFilter;
+                        if (filters.status === 'active') {
+                            isActiveFilter = true;
+                        } else if (filters.status === 'inactive') {
+                            isActiveFilter = false;
+                        } else if (filters.isActive !== undefined) {
+                            isActiveFilter = filters.isActive === 'true';
+                        }
+                        return isActiveFilter !== undefined ? { user: { status: isActiveFilter ? 'ACTIVE' : 'INACTIVE' } } : {};
+                    })(),
+                },
+            }),
+        ]);
+
+        const meta = queryBuilder.getPaginationMeta(total);
+
+        return {
+            data: teachers as unknown as ITeacher[],
+            meta,
+        };
     } catch (error) {
         throw error;
     }
@@ -433,9 +506,34 @@ export const createSubject = async (data: ISubjectCreate): Promise<any> => {
     }
 };
 
-export const getAllSubjects = async (filters: any = {}): Promise<any[]> => {
+export const getAllSubjects = async (filters: any = {}): Promise<{ data: any[]; meta: any }> => {
     try {
-        return await SubjectModel.findMany(filters);
+        const queryBuilder = new QueryBuilder(filters);
+
+        // Build query with search, filter, sort, pagination, and field selection
+        queryBuilder.search(['name', 'code']).filter().sort().paginate().fields();
+
+        const queryOptions = queryBuilder.getQueryOptions();
+
+        // Execute query
+        const [subjects, total] = await Promise.all([
+            prisma.subject.findMany({
+                where: queryOptions.where,
+                orderBy: queryOptions.orderBy,
+                skip: queryOptions.skip,
+                take: queryOptions.take,
+            }),
+            prisma.subject.count({
+                where: queryOptions.where,
+            }),
+        ]);
+
+        const meta = queryBuilder.getPaginationMeta(total);
+
+        return {
+            data: subjects,
+            meta,
+        };
     } catch (error) {
         throw error;
     }

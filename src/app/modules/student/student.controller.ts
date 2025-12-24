@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { studentServices } from "./student.service";
 import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
+import sendResponse, { sendPaginatedResponse } from "../../utils/sendResponse";
 import { StatusCodes } from 'http-status-codes';
 import { studentValidation } from './student.validation';
 
@@ -37,10 +37,7 @@ const getStudentByUserId = catchAsync(async (req: Request, res: Response) => {
 /** Get all Students */
 const getAllStudents = catchAsync(async (req: Request, res: Response) => {
     const result = await studentServices.getAllStudents(req.query);
-    sendResponse(res, {
-        message: "Students retrieved successfully",
-        data: result,
-    });
+    sendPaginatedResponse(res, "students", result.data, result.meta, "Students retrieved successfully");
 });
 
 /** Update a Student */
@@ -78,10 +75,7 @@ const getStudentProfile = catchAsync(async (req: Request, res: Response) => {
 const getStudentAttendance = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await studentServices.getStudentAttendance(id, req.query);
-    sendResponse(res, {
-        message: "Student attendance retrieved successfully",
-        data: result,
-    });
+    sendPaginatedResponse(res, "attendances", result.data, result.meta, "Student attendance retrieved successfully");
 });
 
 /** Get Student Attendance Summary */

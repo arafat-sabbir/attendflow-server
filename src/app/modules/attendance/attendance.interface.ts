@@ -128,10 +128,44 @@ export interface IAttendanceSessionWithRelations extends IAttendanceSession {
 export interface IAttendanceSessionCreate {
     courseId: string;
     teacherId: string;
+    date?: Date;
     startTime: Date;
     endTime?: Date | null;
     location?: string | null;
     notes?: string | null;
+}
+
+// Attendance session filters interface
+export interface IAttendanceSessionFilters {
+    courseId?: string;
+    teacherId?: string;
+    isActive?: boolean;
+    startDate?: Date;
+    endDate?: Date;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+}
+
+// Update attendance session interface
+export interface IAttendanceSessionUpdate {
+    endTime?: Date | null;
+    isActive?: boolean;
+    location?: string | null;
+    notes?: string | null;
+}
+
+// Attendance session statistics interface
+export interface IAttendanceSessionStats {
+    sessionId: string;
+    totalTokens: number;
+    totalCheckIns: number;
+    uniqueStudents: number;
+    sessionStart: Date;
+    sessionEnd?: Date | null;
+    isActive: boolean;
+    courseId: string;
 }
 
 
@@ -144,6 +178,7 @@ export interface IAttendanceFilters {
     endDate?: Date;
     batchId?: string;
     departmentId?: string;
+    reportType?: string;
     page?: number;
     limit?: number;
     sortBy?: string;

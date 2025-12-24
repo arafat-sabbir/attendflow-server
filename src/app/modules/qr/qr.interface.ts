@@ -41,8 +41,8 @@ export interface IQRTokenCreate {
     validFrom?: Date;
     validUntil?: Date;
     maxUses?: number;
-    location?: string;
-    description?: string;
+    location?: string | null;
+    description?: string | null;
 }
 
 // Update QR Token interface
@@ -95,6 +95,8 @@ export interface IQRValidationRequest {
     token?: string;
     userId: string;
     location?: string | null;
+    ipAddress?: string | null;
+    userAgent?: string | null;
 }
 
 // QR Code validation response interface

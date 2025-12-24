@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { CourseController } from './course.controller';
 import { CourseValidation } from './course.validation';
 import validateRequest from '../../middlewares/validateRequest';
-import { AuthMiddleware } from '../../middlewares/auth';
+import AuthorizeRequest, { AuthMiddleware } from '../../middlewares/auth';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ const router = Router();
  */
 router.post(
     '/courses',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.createCourse),
     CourseController.createCourse
 );
@@ -33,7 +33,7 @@ router.post(
  */
 router.get(
     '/courses',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.courseFilters),
     CourseController.getAllCourses
 );
@@ -49,7 +49,7 @@ router.get(
  */
 router.get(
     '/courses/stats',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     CourseController.getCourseStats
 );
 
@@ -64,7 +64,7 @@ router.get(
  */
 router.get(
     '/courses/:courseId',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.courseIdParam),
     CourseController.getCourseById
 );
@@ -80,7 +80,7 @@ router.get(
  */
 router.patch(
     '/courses/:courseId',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.courseIdParam),
     validateRequest(CourseValidation.updateCourse),
     CourseController.updateCourse
@@ -97,7 +97,7 @@ router.patch(
  */
 router.delete(
     '/courses/:courseId',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.courseIdParam),
     CourseController.deleteCourse
 );
@@ -113,7 +113,7 @@ router.delete(
  */
 router.post(
     '/enrollments',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.createCourseEnrollment),
     CourseController.enrollStudentInCourse
 );
@@ -129,7 +129,7 @@ router.post(
  */
 router.get(
     '/enrollments',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.courseEnrollmentFilters),
     CourseController.getAllCourseEnrollments
 );
@@ -145,7 +145,7 @@ router.get(
  */
 router.get(
     '/enrollments/stats',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     CourseController.getCourseEnrollmentStats
 );
 
@@ -160,7 +160,7 @@ router.get(
  */
 router.get(
     '/enrollments/:enrollmentId',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.enrollmentIdParam),
     CourseController.getCourseEnrollmentById
 );
@@ -176,7 +176,7 @@ router.get(
  */
 router.delete(
     '/enrollments/:enrollmentId',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.enrollmentIdParam),
     CourseController.removeStudentFromCourse
 );
@@ -192,7 +192,7 @@ router.delete(
  */
 router.post(
     '/schedules',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.createClassSchedule),
     CourseController.createClassSchedule
 );
@@ -208,7 +208,7 @@ router.post(
  */
 router.get(
     '/schedules',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.classScheduleFilters),
     CourseController.getAllClassSchedules
 );
@@ -224,7 +224,7 @@ router.get(
  */
 router.get(
     '/schedules/stats',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     CourseController.getClassScheduleStats
 );
 
@@ -239,7 +239,7 @@ router.get(
  */
 router.get(
     '/schedules/:scheduleId',
-    AuthMiddleware.isTeacherOrAdmin,
+    AuthorizeRequest('ADMIN', "TEACHER"),
     validateRequest(CourseValidation.scheduleIdParam),
     CourseController.getClassScheduleById
 );
@@ -255,7 +255,7 @@ router.get(
  */
 router.patch(
     '/schedules/:scheduleId',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.scheduleIdParam),
     validateRequest(CourseValidation.updateClassSchedule),
     CourseController.updateClassSchedule
@@ -272,7 +272,7 @@ router.patch(
  */
 router.delete(
     '/schedules/:scheduleId',
-    AuthMiddleware.isAdmin,
+    AuthorizeRequest('ADMIN'),
     validateRequest(CourseValidation.scheduleIdParam),
     CourseController.deleteClassSchedule
 );

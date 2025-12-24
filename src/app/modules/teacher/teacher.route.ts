@@ -323,7 +323,7 @@ router.post(
 /**
  * @description get all subjects with filtering
  * @param {string} path - /api/teacher/subjects
- * @param {function} middleware - ['AuthorizeRequest(TEACHER, ADMIN)']
+ * @param {function} middleware - ['AuthorizeRequest(TEACHER, ADMIN)', 'validateRequest(TeacherValidation.subjectFilters)']
  * @param {function} controller - ['getAllSubjects']
  * @returns {object} - router
  * @access private - ['TEACHER', 'ADMIN']
@@ -332,6 +332,7 @@ router.post(
 router.get(
     '/subjects',
     AuthorizeRequest('TEACHER', 'ADMIN'),
+    validateRequest(TeacherValidation.subjectFilters),
     TeacherController.getAllSubjects
 );
 
