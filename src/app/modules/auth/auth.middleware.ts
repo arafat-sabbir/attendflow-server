@@ -151,3 +151,15 @@ export const AuthMiddleware = {
     isStudent,
     isTeacher,
 };
+
+// Named exports for convenience
+export { authenticate as authMiddleware };
+export { isAdmin as adminGuard };
+export { authorize };
+export { authorizeOwnerOrAdmin };
+export { verifyRefreshToken };
+export { isTeacherOrAdmin };
+export { isAdmin };
+export { isSuperAdmin };
+export { isStudent };
+export { isTeacher };

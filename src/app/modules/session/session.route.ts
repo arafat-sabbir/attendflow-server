@@ -6,8 +6,7 @@
 
 import { Router } from 'express';
 import { SessionController } from './session.controller';
-import { authMiddleware } from '../../middleware/auth.middleware';
-import { adminGuard } from '../../middleware/admin.guard';
+import { authMiddleware, adminGuard } from '../auth/auth.middleware';
 
 const router = Router();
 

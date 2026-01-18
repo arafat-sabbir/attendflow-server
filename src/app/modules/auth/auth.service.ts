@@ -1,4 +1,4 @@
-import { User, RefreshToken, PrismaClient } from '@prisma/client';
+import { User, RefreshToken } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../../config';
@@ -9,8 +9,7 @@ import { verifyToken } from '../../utils/verifyToken';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 import UserModel from '../user/user.model';
-
-const prisma = new PrismaClient();
+import prisma from '../../config/prisma';
 
 // Types for auth service
 interface LoginUser {

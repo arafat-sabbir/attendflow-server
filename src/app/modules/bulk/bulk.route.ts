@@ -6,8 +6,7 @@
 
 import { Router } from 'express';
 import { BulkController } from './bulk.controller';
-import { authMiddleware } from '../../middleware/auth.middleware';
-import { adminGuard } from '../../middleware/admin.guard';
+import { authMiddleware, adminGuard } from '../auth/auth.middleware';
 import validateRequest from '../../middlewares/validateRequest';
 import { BulkValidation } from './bulk.validation';
 

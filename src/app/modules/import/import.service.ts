@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 import { IImportExecution, ImportType } from './import.interface';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
@@ -8,8 +7,7 @@ import UserModel from '../user/user.model';
 import { CourseModel } from '../course';
 import { DepartmentModel } from '../organization/department.model';
 import { BatchModel } from '../organization/batch.model';
-
-const prisma = new PrismaClient();
+import prisma from '../../config/prisma';
 
 // CSV Row interfaces
 interface StudentCsvRow {
